@@ -1,0 +1,202 @@
+1. Algorithm: User Registration
+
+Input:
+User details (Name, Email, Password, Role)
+
+Output:
+New user account stored in the system
+
+Steps:
+
+1. Start
+2. Accept user input: name, email, password, and role.
+3. Validate all input fields:
+   a. Ensure no field is empty.
+   b. Verify email format.
+   c. Check password strength (minimum length, characters).
+4. Query database to check if the email already exists.
+5. If email exists:
+   a. Display error message "User already registered".
+   b. Terminate process.
+6. Else:
+   a. Encrypt the password using a secure hashing method.
+   b. Create a new user record.
+   c. Store user details in the database.
+7. Confirm successful registration to the user.
+8. End
+
+
+
+2. Algorithm: User Login Authentication
+
+Input:
+User credentials (Email, Password)
+
+Output:
+Access to system dashboard or error message
+
+Steps:
+
+1. Start
+2. Accept email and password from user.
+3. Validate input fields for correctness.
+4. Retrieve user record corresponding to the entered email.
+5. If no record found:
+   a. Display "User not found".
+   b. Terminate process.
+6. Compare entered password with stored hashed password.
+7. If passwords match:
+   a. Generate user session.
+   b. Grant access to the application dashboard.
+8. Else:
+   a. Display "Invalid login credentials".
+9. End
+
+
+
+3. Algorithm: Medicine Schedule Creation
+
+Input:
+Medicine details (Name, Dosage, Time, Frequency)
+
+Output:
+Structured medication schedule stored in database
+
+Steps:
+
+1. Start
+2. Accept medicine details from user.
+3. Validate inputs:
+   a. Ensure all fields are filled.
+   b. Verify time format and frequency selection.
+4. Create a medication entry with provided details.
+5. Based on frequency:
+   a. Generate schedule entries (daily/weekly).
+6. Store medication data and schedule in database.
+7. Link schedule to the corresponding user profile.
+8. Confirm successful creation of schedule.
+9. End
+
+
+
+4. Algorithm: Medication Reminder and Alert System
+
+Input:
+Medication schedule, system time
+
+Output:
+Reminder notifications and caregiver alerts
+
+Steps:
+
+1. Start
+2. Continuously monitor system time.
+3. Retrieve all scheduled medications from database.
+4. For each medication:
+   a. Compare current time with scheduled time.
+   b. If match:
+   i. Trigger notification to user device.
+5. Wait for user interaction within a predefined time window.
+6. If user confirms intake:
+   a. Update status as "Taken".
+7. Else:
+   a. Send secondary reminder notification.
+8. If no response after second attempt:
+   a. Mark medication as "Missed".
+   b. Trigger alert notification to caregiver.
+9. Log all events in the system.
+10. End
+
+
+
+5. Algorithm: Medicine Confirmation Handling
+
+Input:
+User action (Taken / Remind Later / No Response)
+
+Output:
+Updated medication status
+
+Steps:
+
+1. Start
+2. Capture user response from notification interface.
+3. If response is "Taken":
+   a. Update medication status as "Taken".
+   b. Record timestamp in database.
+4. Else if response is "Remind Later":
+   a. Set a new reminder time.
+   b. Schedule next notification.
+5. Else if no response:
+   a. Keep status as "Pending".
+6. Sync updated status with caregiver dashboard.
+7. End
+
+
+
+6. Algorithm: Caregiver Alert System
+
+Input:
+Medication status logs
+
+Output:
+Alert notification sent to caregiver
+
+Steps:
+
+1. Start
+2. Monitor medication logs continuously.
+3. Identify medications marked as "Missed".
+4. For each missed entry:
+   a. Generate alert message including user and medicine details.
+5. Send notification to registered caregiver device.
+6. Record alert event in database.
+7. Ensure delivery confirmation of alert.
+8. End
+
+
+
+7. Algorithm: Prescription OCR Processing
+
+Input:
+Prescription image
+
+Output:
+Extracted medicine information stored in system
+
+Steps:
+
+1. Start
+2. Accept image input from user.
+3. Preprocess image (resize, enhance clarity).
+4. Apply OCR engine to extract text.
+5. Parse extracted text to identify:
+   a. Medicine names
+   b. Dosage instructions
+   c. Frequency
+6. Validate extracted data.
+7. Convert parsed data into structured format.
+8. Store extracted medicines in database.
+9. Generate medication schedule automatically.
+10. End
+
+
+
+8. Algorithm: Emergency SOS Alert System
+
+Input:
+SOS trigger event
+
+Output:
+Emergency alert with location sent to caregiver
+
+Steps:
+
+1. Start
+2. Detect SOS button activation by user.
+3. Retrieve user profile and caregiver details.
+4. Access device GPS to obtain current location.
+5. Generate emergency alert message with location.
+6. Send alert notification to caregiver.
+7. Log emergency event in system.
+8. End
