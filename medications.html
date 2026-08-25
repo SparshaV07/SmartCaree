@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartCare — Medications</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="app-page" data-page="medications">
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-content">
+      <header class="view-header">
+        <h2>Medications</h2>
+        <p>Assigned medicine schedules and dose status.</p>
+        <button class="btn-primary sm" id="add-medication-btn">+ Assign medicine</button>
+      </header>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>Resident</th><th>Medicine</th><th>Dosage</th><th>Time</th><th>Status</th></tr>
+        </thead>
+        <tbody id="medications-table-body">
+          <tr><td colspan="5" class="empty-row">Loading…</td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="medication-modal">
+    <form class="modal" id="medication-form">
+      <h3>Assign medicine</h3>
+      <label>Resident
+        <select id="medication-resident" required></select>
+      </label>
+      <label>Medicine name<input type="text" id="medication-name" required></label>
+      <label>Dosage<input type="text" id="medication-dosage" placeholder="e.g. 1 tablet, 500mg" required></label>
+      <label>Time<input type="time" id="medication-time" required></label>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close="medication-modal">Cancel</button>
+        <button type="submit" class="btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/medications.js"></script>
+  <script src="js/auth-guard.js"></script>
+</body>
+</html>

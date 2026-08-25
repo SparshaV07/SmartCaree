@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartCare — Residents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="app-page" data-page="residents">
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main-content">
+      <header class="view-header">
+        <h2>Residents</h2>
+        <p>People you're monitoring.</p>
+        <button class="btn-primary sm" id="add-resident-btn">+ Add resident</button>
+      </header>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>Resident ID</th></tr>
+        </thead>
+        <tbody id="residents-table-body">
+          <tr><td colspan="3" class="empty-row">Loading…</td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="resident-modal">
+    <form class="modal" id="resident-form">
+      <h3>Add resident</h3>
+      <label>Full name<input type="text" id="resident-name" required></label>
+      <label>Email (their SmartCare app login)<input type="email" id="resident-email" required></label>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close="resident-modal">Cancel</button>
+        <button type="submit" class="btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/residents.js"></script>
+  <script src="js/auth-guard.js"></script>
+</body>
+</html>
