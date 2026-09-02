@@ -9,6 +9,7 @@ import {
   orderBy,
   onSnapshot,
   limit,
+  where,
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 function showSOSPopup(name) {
@@ -36,10 +37,7 @@ function showSOSPopup(name) {
 
   document.body.appendChild(popup);
 
-  document.getElementById("dismiss-sos-btn").onclick = () => {
-  sessionStorage.setItem("lastSOS", lastSOS);
-  popup.remove();
-};
+document.getElementById("dismiss-sos-btn").onclick = () => popup.remove();
 
   document.getElementById("view-alert-btn").onclick = () => {
     window.location.href = "alerts.html";
@@ -141,20 +139,44 @@ if (!document.getElementById("sos-style")) {
   document.head.appendChild(style);
 }
 
-let lastSOS = sessionStorage.getItem("lastSOS");
+let activeSOS = null;
+let reminderTimer = null;
 
 export function initSOSListener() {
   onSnapshot(
-    query(collection(db, "sos"), orderBy("timestamp", "desc"), limit(1)),
+    query(
+  collection(db, "sos"),
+  where("status", "==", "active"),
+  orderBy("timestamp", "desc"),
+  limit(1)
+),
     (snap) => {
-      if (snap.empty) return;
+      // No active SOS → stop reminders
+     if (snap.empty) {
+        activeSOS = null;
+
+        if (reminderTimer) {
+          clearInterval(reminderTimer);
+          reminderTimer = null;
+        }
+
+        return;
+      }
 
       const latest = snap.docs[0];
 
-     if (latest.id === lastSOS) return;
+      // New emergency
+      if (activeSOS !== latest.id) {
+        activeSOS = latest.id;
 
-lastSOS = latest.id;
-showSOSPopup(latest.data().name || "Resident");
+        showSOSPopup(latest.data().name || "Resident");
+
+        if (reminderTimer) clearInterval(reminderTimer);
+
+        reminderTimer = setInterval(() => {
+          showSOSPopup(latest.data().name || "Resident");
+        }, 20000); // every 20 seconds
+      }
     }
   );
 }

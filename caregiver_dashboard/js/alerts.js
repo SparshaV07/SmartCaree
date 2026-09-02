@@ -7,7 +7,7 @@ import { initNav } from "./nav.js";
 import { initSOSListener } from "./sos.js";
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, orderBy, serverTimestamp, limit
+onSnapshot, query, orderBy, serverTimestamp, limit, where
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import {
   showToast, confirmAction, openModal, closeModal, wireModalDismiss,
@@ -70,10 +70,11 @@ const filtered = allAlerts.filter(
             <span class="badge ${sev.badge}">${sev.label}</span>
           </div>
           <div class="text-muted" style="font-size:0.82rem;margin-top:4px;">
-  ${resident.name ? escapeHtml(resident.name) : escapeHtml(a.residentName || "Unknown")}
-  ${resident.residentId ? " (" + escapeHtml(resident.residentId) + ")" : ""}
-  ${resident.room ? " · Room " + escapeHtml(resident.room) : ""}
-  · ${timeAgo(a.createdAt)}
+${resident.name ? escapeHtml(resident.name) : escapeHtml(a.residentName || "Unknown")}
+${resident.residentId || a.residentId ? " (" + escapeHtml(resident.residentId || a.residentId) + ")" : ""}
+${resident.room || a.room ? " · Room " + escapeHtml(resident.room || a.room) : ""}
+${resident.wing || a.wing ? " · " + escapeHtml(resident.wing || a.wing) : ""}
+· ${timeAgo(a.createdAt)}
   ${a.latitude && a.longitude ? `
   <div style="margin-top:8px;">
     <a href="https://www.google.com/maps?q=${a.latitude},${a.longitude}"
@@ -98,8 +99,11 @@ ${a.latitude && a.longitude ? `
 ` : ""}
         </div>
         <div class="row-actions">
-          ${!a.read ? `<button class="btn btn-outline btn-sm" data-read="${a.id}">Mark read</button>` : ""}
-          <button class="btn btn-ghost btn-sm" data-delete="${a.id}" style="color:var(--brick);">Delete</button>
+          ${a.message === "Emergency SOS"
+  ? `<button class="btn btn-primary btn-sm" data-resolve="${a.id}">Resolve</button>`
+  : (!a.read ? `<button class="btn btn-outline btn-sm" data-read="${a.id}">Mark read</button>` : "")
+}
+<button class="btn btn-ghost btn-sm" data-delete="${a.id}" style="color:var(--brick);">Delete</button>
         </div>
       </div>`;
     })
@@ -114,6 +118,22 @@ ${a.latitude && a.longitude ? `
       }
     })
   );
+  list.querySelectorAll("[data-resolve]").forEach((btn) =>
+  btn.addEventListener("click", async () => {
+    try {
+      const sosId = btn.dataset.resolve.replace("sos-", "");
+
+      await updateDoc(doc(db, "sos", sosId), {
+        status: "resolved",
+      });
+
+      showToast("Emergency marked as resolved.", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Couldn't resolve emergency.", "error");
+    }
+  })
+);
   list.querySelectorAll("[data-delete]").forEach((btn) =>
     btn.addEventListener("click", async () => {
       const ok = await confirmAction("Delete this alert?");
