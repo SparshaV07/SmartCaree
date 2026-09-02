@@ -24,7 +24,7 @@ const modalOverlay = document.getElementById("med-modal");
 const form = document.getElementById("med-form");
 const modalTitle = document.getElementById("med-modal-title");
 const deleteBtn = document.getElementById("med-delete-btn");
-const residentSelect = document.getElementById("med-resident");
+const residentSelect = document.getElementById("m-resident");
 
 wireModalDismiss("med-modal");
 

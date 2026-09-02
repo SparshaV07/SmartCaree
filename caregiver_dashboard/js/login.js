@@ -61,7 +61,7 @@ onAuthStateChanged(auth, (user) => {
     console.log("Already logged in:", user.email);
 
     // User is already authenticated
-    window.location.href = "index.html";
+    window.location.href = "dashboard.html";
   }
 
 });
@@ -292,7 +292,7 @@ form?.addEventListener("submit", async (e) => {
 
 
       // Redirect to dashboard
-      window.location.href = "index.html";
+      window.location.href = "dashboard.html";
 
     }
 
@@ -353,7 +353,7 @@ form?.addEventListener("submit", async (e) => {
 
 
       // Redirect to dashboard
-      window.location.href = "index.html";
+      window.location.href = "dashboard.html";
 
     }
 
