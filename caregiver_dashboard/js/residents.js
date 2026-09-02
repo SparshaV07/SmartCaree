@@ -4,6 +4,7 @@
 
 import { db } from "./firebase.js";
 import { initNav } from "./nav.js";
+import { initSOSListener } from "./sos.js";
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
   onSnapshot, query, orderBy, serverTimestamp,
@@ -14,6 +15,7 @@ import {
 } from "./utils.js";
 
 await initNav("residents");
+initSOSListener();
 
 const tableBody = document.getElementById("residents-body");
 const emptyState = document.getElementById("residents-empty");
@@ -149,7 +151,13 @@ form.addEventListener("submit", async (e) => {
       await updateDoc(doc(db, "residents", editingId), payload);
       showToast("Resident updated.", "success");
     } else {
-      await addDoc(collection(db, "residents"), { ...payload, createdAt: serverTimestamp() });
+      const count = residents.length + 1;
+
+await addDoc(collection(db, "residents"), {
+  ...payload,
+  residentId: `R-${String(count).padStart(3, "0")}`,
+  createdAt: serverTimestamp()
+});
       showToast("Resident added.", "success");
     }
     closeModal("resident-modal");

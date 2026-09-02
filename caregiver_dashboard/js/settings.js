@@ -4,6 +4,7 @@
 
 import { auth, db } from "./firebase.js";
 import { initNav } from "./nav.js";
+import { initSOSListener } from "./sos.js";
 import {
   updatePassword, updateProfile, signOut,
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
@@ -11,6 +12,7 @@ import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.0.0/f
 import { showToast, friendlyAuthError, confirmAction } from "./utils.js";
 
 const user = await initNav("settings");
+initSOSListener();
 
 const profileForm = document.getElementById("profile-form");
 const passwordForm = document.getElementById("password-form");

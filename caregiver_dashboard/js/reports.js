@@ -4,10 +4,12 @@
 
 import { db } from "./firebase.js";
 import { initNav } from "./nav.js";
+import { initSOSListener } from "./sos.js";
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import { escapeHtml, showToast, formatDate } from "./utils.js";
 
 await initNav("reports");
+initSOSListener();
 
 const els = {
   totalResidents: document.getElementById("rep-total-residents"),

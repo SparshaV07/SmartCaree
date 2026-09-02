@@ -4,12 +4,14 @@
 
 import { db } from "./firebase.js";
 import { initNav } from "./nav.js";
+import { initSOSListener } from "./sos.js";
 import {
   collection, getDocs, query, orderBy, limit,
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import { escapeHtml, formatDate, timeAgo, initials } from "./utils.js";
 
 const user = await initNav("dashboard");
+initSOSListener();
 document.getElementById("welcome-name").textContent =
   (user.email || "there").split("@")[0];
 

@@ -4,6 +4,7 @@
 
 import { db } from "./firebase.js";
 import { initNav } from "./nav.js";
+import { initSOSListener } from "./sos.js";
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
   onSnapshot, query, orderBy, serverTimestamp,
@@ -14,6 +15,7 @@ import {
 } from "./utils.js";
 
 await initNav("appointments");
+initSOSListener();
 
 const tableBody = document.getElementById("appts-body");
 const emptyState = document.getElementById("appts-empty");
