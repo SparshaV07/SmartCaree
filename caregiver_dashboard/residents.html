@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Residents · CareTrack</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div class="shift-strip"></div>
+    <header class="topbar">
+      <div>
+        <span class="page-eyebrow">People</span>
+        <h1>Residents</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" id="add-resident-btn">+ Add resident</button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="card">
+        <div class="flex-between mb-16">
+          <div class="search-input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="search-input" placeholder="Search by name, room, condition…" />
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Resident</th>
+                <th>Room</th>
+                <th>Condition</th>
+                <th>Emergency contact</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="residents-body"></tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" id="residents-empty" style="display:none;">
+          <h3>No residents yet</h3>
+          <p>Add your first resident to start tracking their care.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add/Edit Resident Modal -->
+<div class="modal-overlay" id="resident-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="resident-modal-title">Add resident</h3>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form id="resident-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="r-name">Full name</label>
+          <input type="text" id="r-name" name="name" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="r-age">Age</label>
+            <input type="number" id="r-age" name="age" min="0" />
+          </div>
+          <div class="form-group">
+            <label for="r-room">Room</label>
+            <input type="text" id="r-room" name="room" placeholder="e.g. 204B" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="r-condition">Primary condition</label>
+          <input type="text" id="r-condition" name="primaryCondition" placeholder="e.g. Mild dementia" />
+        </div>
+        <div class="form-group">
+          <label for="r-contact">Emergency contact</label>
+          <input type="text" id="r-contact" name="emergencyContact" placeholder="Name · phone number" />
+        </div>
+        <div class="form-group">
+          <label for="r-status">Status</label>
+          <select id="r-status" name="status">
+            <option value="stable">Stable</option>
+            <option value="attention">Needs attention</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="r-notes">Notes</label>
+          <textarea id="r-notes" name="notes" placeholder="Care preferences, routines, allergies…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="resident-delete-btn" style="margin-right:auto;display:none;">Delete</button>
+        <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary">Save resident</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/residents.js"></script>
+</body>
+</html>

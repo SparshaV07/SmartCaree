@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reports · CareTrack</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div class="shift-strip"></div>
+    <header class="topbar">
+      <div>
+        <span class="page-eyebrow">Insights</span>
+        <h1>Reports</h1>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="grid grid-4 mb-24">
+        <div class="stat-card">
+          <span class="stat-label">Residents</span>
+          <span class="stat-value" id="rep-total-residents">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Medications</span>
+          <span class="stat-value" id="rep-total-meds">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Appointments</span>
+          <span class="stat-value" id="rep-total-appts">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Alerts</span>
+          <span class="stat-value" id="rep-total-alerts">—</span>
+        </div>
+      </div>
+
+      <div class="grid grid-3 mb-24">
+        <div class="card">
+          <h3 class="section-title">Resident status</h3>
+          <p class="section-sub">Distribution across the house.</p>
+          <div id="resident-breakdown"></div>
+        </div>
+        <div class="card">
+          <h3 class="section-title">Medication status</h3>
+          <p class="section-sub">Given vs. pending vs. missed.</p>
+          <div id="med-breakdown"></div>
+        </div>
+        <div class="card">
+          <h3 class="section-title">Appointment status</h3>
+          <p class="section-sub">Upcoming vs. completed vs. cancelled.</p>
+          <div id="appt-breakdown"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">Export data</h3>
+        <p class="section-sub">Download a CSV snapshot for your records.</p>
+        <div class="flex gap-12" style="flex-wrap:wrap;">
+          <button class="btn btn-outline" data-export="residents">Export residents</button>
+          <button class="btn btn-outline" data-export="medications">Export medications</button>
+          <button class="btn btn-outline" data-export="appointments">Export appointments</button>
+          <button class="btn btn-outline" data-export="prescriptions">Export prescriptions</button>
+          <button class="btn btn-outline" data-export="alerts">Export alerts</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/reports.js"></script>
+</body>
+</html>

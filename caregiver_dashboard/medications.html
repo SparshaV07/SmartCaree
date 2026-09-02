@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Medications · SmartCare</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div class="shift-strip"></div>
+    <header class="topbar">
+      <div>
+        <span class="page-eyebrow">Care</span>
+        <h1>Medications</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" id="add-med-btn">+ Add medication</button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="card">
+        <div class="flex-between mb-16" style="flex-wrap:wrap;gap:12px;">
+          <div class="search-input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="search-input" placeholder="Search medication or resident…" />
+          </div>
+          <select id="status-filter" style="max-width:180px;">
+            <option value="all">All statuses</option>
+            <option value="given">Given</option>
+            <option value="pending">Pending</option>
+            <option value="missed">Missed</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Medication</th>
+                <th>Resident</th>
+                <th>Dosage</th>
+                <th>Frequency</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="meds-body"></tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" id="meds-empty" style="display:none;">
+          <h3>No medications found</h3>
+          <p>Add a medication schedule for a resident to get started.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add/Edit Medication Modal -->
+<div class="modal-overlay" id="med-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="med-modal-title">Add medication</h3>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form id="med-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="m-name">Medication name</label>
+          <input type="text" id="m-name" name="name" required />
+        </div>
+        <div class="form-group">
+          <label for="m-resident">Resident</label>
+          <select id="m-resident" name="residentId" required></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="m-dosage">Dosage</label>
+            <input type="text" id="m-dosage" name="dosage" placeholder="e.g. 500mg" />
+          </div>
+          <div class="form-group">
+            <label for="m-frequency">Frequency</label>
+            <input type="text" id="m-frequency" name="frequency" placeholder="e.g. Twice daily" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="m-time">Scheduled time</label>
+            <input type="time" id="m-time" name="time" />
+          </div>
+          <div class="form-group">
+            <label for="m-status">Status</label>
+            <select id="m-status" name="status">
+              <option value="pending">Pending</option>
+              <option value="given">Given</option>
+              <option value="missed">Missed</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="m-notes">Notes</label>
+          <textarea id="m-notes" name="notes" placeholder="Instructions, side effects to watch…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="med-delete-btn" style="margin-right:auto;display:none;">Delete</button>
+        <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary">Save medication</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/medications.js"></script>
+</body>
+</html>

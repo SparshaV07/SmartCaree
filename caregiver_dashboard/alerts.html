@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Alerts · CareTrack</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div class="shift-strip"></div>
+    <header class="topbar">
+      <div>
+        <span class="page-eyebrow">Attention</span>
+        <h1>Alerts</h1>
+      </div>
+      <div class="topbar-actions">
+        <select id="severity-filter" style="max-width:170px;">
+          <option value="all">All severities</option>
+          <option value="urgent">Urgent</option>
+          <option value="attention">Needs attention</option>
+          <option value="info">Info</option>
+        </select>
+        <button class="btn btn-primary" id="add-alert-btn">+ New alert</button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div id="alerts-list"></div>
+      <div class="empty-state card" id="alerts-empty" style="display:none;">
+        <h3>All clear</h3>
+        <p>No alerts match this filter right now.</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- New Alert Modal -->
+<div class="modal-overlay" id="alert-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>New alert</h3>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form id="alert-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="al-message">What's happening?</label>
+          <textarea id="al-message" name="message" placeholder="e.g. Refused breakfast, monitor fluid intake" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="al-resident">Resident</label>
+          <select id="al-resident" name="residentId"></select>
+        </div>
+        <div class="form-group">
+          <label for="al-severity">Severity</label>
+          <select id="al-severity" name="severity">
+            <option value="attention">Needs attention</option>
+            <option value="urgent">Urgent</option>
+            <option value="info">Info</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary">Create alert</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/alerts.js"></script>
+</body>
+</html>

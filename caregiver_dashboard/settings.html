@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Settings · CareTrack</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div class="shift-strip"></div>
+    <header class="topbar">
+      <div>
+        <span class="page-eyebrow">Account</span>
+        <h1>Settings</h1>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="grid grid-2">
+        <div class="card">
+          <h3 class="section-title">Profile</h3>
+          <p class="section-sub">Signed in as <strong id="settings-email">—</strong></p>
+          <form id="profile-form">
+            <div class="form-group">
+              <label for="p-name">Full name</label>
+              <input type="text" id="p-name" name="name" />
+            </div>
+            <div class="form-group">
+              <label for="p-role">Role</label>
+              <input type="text" id="p-role" name="role" placeholder="e.g. Caregiver, Nurse" />
+            </div>
+            <div class="form-group flex" style="align-items:center;gap:10px;">
+              <input type="checkbox" id="notify-toggle" style="width:auto;" />
+              <label for="notify-toggle" style="margin:0;">Email me about urgent alerts</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Save profile</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title">Change password</h3>
+          <p class="section-sub">Choose a strong password you don't use elsewhere.</p>
+          <form id="password-form">
+            <div class="form-group">
+              <label for="new-password">New password</label>
+              <input type="password" id="new-password" name="newPassword" minlength="6" required />
+            </div>
+            <div class="form-group">
+              <label for="confirm-password">Confirm new password</label>
+              <input type="password" id="confirm-password" name="confirmPassword" minlength="6" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Update password</button>
+          </form>
+
+          <div class="mt-24" style="border-top:1px solid var(--border);padding-top:20px;">
+            <h3 class="section-title" style="color:var(--brick);">Log out</h3>
+            <p class="section-sub">End your current session on this device.</p>
+            <button class="btn btn-outline" id="settings-logout" style="color:var(--brick);border-color:var(--brick);">Log out</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/settings.js"></script>
+</body>
+</html>
