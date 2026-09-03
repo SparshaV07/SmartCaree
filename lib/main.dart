@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'ocr_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -202,6 +203,13 @@ class HomePage extends StatelessWidget {
               'SOS Emergency',
               'Get emergency assistance',
             ),
+            const SizedBox(height: 12),
+            _homeCard(
+  context,
+  Icons.document_scanner_rounded,
+  'Prescription Scanner',
+  'Upload prescription and extract medicines',
+),
           ],
         ),
       ),
@@ -215,39 +223,55 @@ static Widget _homeCard(
   String subtitle,
 ) {
 return GestureDetector(
-  onTap: () async {
-    if (title == "SOS Emergency") {
-      final user = FirebaseAuth.instance.currentUser;
+onTap: () async {
+  if (title == "Prescription Scanner") {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const OCRScreen(),
+      ),
+    );
+    return;
+  }
 
-      if (user != null) {
-        final userDoc = await FirebaseFirestore.instance
-            .collection("users")
-            .doc(user.uid)
-            .get();
+  if (title == "SOS Emergency") {
+    final user = FirebaseAuth.instance.currentUser;
 
-        final data = userDoc.data() ?? {};
+    if (user != null) {
+      final userDoc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .get();
 
-        await FirebaseFirestore.instance
-            .collection("sos")
-            .add({
-          "userId": user.uid,
-          "name": data["name"] ?? "Unknown",
-          "phone": data["phone"] ?? "",
-          "emergencyContact": data["emergencyContact"] ?? "",
-          "status": "active",
-          "time": FieldValue.serverTimestamp(),
-        });
+      final data = userDoc.data() ?? {};
 
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("🚨 Emergency alert sent"),
-            ),
-          );
-        }
+      await FirebaseFirestore.instance
+          .collection("sos")
+          .add({
+        "userId": user.uid,
+        "name": data["name"] ?? "Unknown",
+        "phone": data["phone"] ?? "",
+        "emergencyContact": data["emergencyContact"] ?? "",
+        "status": "active",
+        "time": FieldValue.serverTimestamp(),
+      });
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Emergency alert sent"),
+          ),
+        );
       }
     }
-  },
+
+    return;
+  }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text("$title selected")),
+  );
+},
   child: Container(
     width: double.infinity,
     padding: const EdgeInsets.all(20),
