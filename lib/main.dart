@@ -250,10 +250,11 @@ onTap: () async {
           .add({
         "userId": user.uid,
         "name": data["name"] ?? "Unknown",
+        "residentId": data["residentId"] ?? "",
         "phone": data["phone"] ?? "",
         "emergencyContact": data["emergencyContact"] ?? "",
         "status": "active",
-        "time": FieldValue.serverTimestamp(),
+        "timestamp": FieldValue.serverTimestamp(),
       });
 
       if (context.mounted) {
