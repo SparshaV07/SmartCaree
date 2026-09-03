@@ -1,6 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await FirebaseAuth.instance.signInAnonymously();
+
   runApp(const SmartCareApp());
 }
 
@@ -9,6 +22,7 @@ class SmartCareApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+  
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SmartCare',
@@ -169,18 +183,21 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _homeCard(
+              context,
               Icons.medication_rounded,
               'Medicines',
               'Stay on track with your medication',
             ),
             const SizedBox(height: 12),
             _homeCard(
+              context,
               Icons.person_rounded,
               'Caregiver',
               'Your caregiver is connected',
             ),
             const SizedBox(height: 12),
             _homeCard(
+              context,
               Icons.emergency_rounded,
               'SOS Emergency',
               'Get emergency assistance',
@@ -191,57 +208,103 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  static Widget _homeCard(
-    IconData icon,
-    String title,
-    String subtitle,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF7F1),
-              borderRadius: BorderRadius.circular(16),
+static Widget _homeCard(
+  BuildContext context,
+  IconData icon,
+  String title,
+  String subtitle,
+) {
+return GestureDetector(
+  onTap: () async {
+    if (title == "SOS Emergency") {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        final userDoc = await FirebaseFirestore.instance
+            .collection("users")
+            .doc(user.uid)
+            .get();
+
+        final data = userDoc.data() ?? {};
+
+        await FirebaseFirestore.instance
+            .collection("sos")
+            .add({
+          "userId": user.uid,
+          "name": data["name"] ?? "Unknown",
+          "phone": data["phone"] ?? "",
+          "emergencyContact": data["emergencyContact"] ?? "",
+          "status": "active",
+          "time": FieldValue.serverTimestamp(),
+        });
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("🚨 Emergency alert sent"),
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF4D9B82),
-            ),
+          );
+        }
+      }
+    }
+  },
+  child: Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 55,
+          height: 55,
+          decoration: BoxDecoration(
+            color: const Color(0xFFEAF7F1),
+            borderRadius: BorderRadius.circular(17),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF193B35),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF71807A),
-                  ),
-                ),
-              ],
-            ),
+          child: Icon(
+            icon,
+            color: const Color(0xFF4D9B82),
+            size: 28,
           ),
-        ],
-      ),
-    );
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Color(0xFF193B35),
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF71807A),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ),
   }
 }
 
@@ -271,24 +334,8 @@ class MedicinesPage extends StatefulWidget {
 }
 
 class _MedicinesPageState extends State<MedicinesPage> {
-  final List<Medicine> medicines = [
-    Medicine(
-      name: 'Vitamin D3',
-      dosage: '1 tablet',
-      time: '09:00 AM',
-      isTaken: true,
-    ),
-    Medicine(
-      name: 'Paracetamol',
-      dosage: '500 mg',
-      time: '02:00 PM',
-    ),
-    Medicine(
-      name: 'Calcium',
-      dosage: '1 tablet',
-      time: '08:00 PM',
-    ),
-  ];
+final CollectionReference medicinesRef =
+    FirebaseFirestore.instance.collection("medications");
 
   void addMedicine() {
     final nameController = TextEditingController();
@@ -365,25 +412,24 @@ class _MedicinesPageState extends State<MedicinesPage> {
               child: const Text('Cancel'),
             ),
             ElevatedButton.icon(
-              onPressed: () {
-                if (nameController.text.trim().isEmpty ||
-                    dosageController.text.trim().isEmpty ||
-                    timeController.text.trim().isEmpty) {
-                  return;
-                }
+onPressed: () async {
+  if (nameController.text.trim().isEmpty ||
+      dosageController.text.trim().isEmpty ||
+      timeController.text.trim().isEmpty) {
+    return;
+  }
 
-                setState(() {
-                  medicines.add(
-                    Medicine(
-                      name: nameController.text.trim(),
-                      dosage: dosageController.text.trim(),
-                      time: timeController.text.trim(),
-                    ),
-                  );
-                });
+  // Save to Firestore
+  await FirebaseFirestore.instance.collection("medications").add({
+    "name": nameController.text.trim(),
+    "dosage": dosageController.text.trim(),
+    "time": timeController.text.trim(),
+    "status": "pending",
+    "createdAt": FieldValue.serverTimestamp(),
+  });
 
-                Navigator.pop(dialogContext);
-              },
+  Navigator.pop(dialogContext);
+},
               icon: const Icon(Icons.save_rounded),
               label: const Text('Save'),
             ),
@@ -393,23 +439,29 @@ class _MedicinesPageState extends State<MedicinesPage> {
     );
   }
 
-  void deleteMedicine(int index) {
-    setState(() {
-      medicines.removeAt(index);
-    });
+Future<void> deleteMedicine(String docId) async {
+  await FirebaseFirestore.instance
+      .collection("medications")
+      .doc(docId)
+      .delete();
+};
   }
 
-  void toggleTaken(int index) {
-    setState(() {
-      medicines[index].isTaken =
-          !medicines[index].isTaken;
-    });
-  }
+Future<void> toggleTaken(String docId, bool currentStatus) async {
+  await FirebaseFirestore.instance
+      .collection("medications")
+      .doc(docId)
+      .update({
+    "status": currentStatus ? "pending" : "taken",
+  });
+}
 
   @override
   Widget build(BuildContext context) {
-    final int takenCount =
-        medicines.where((medicine) => medicine.isTaken).length;
+    final takenCount =
+    docs.where((doc) => doc["status"] == "taken").length;
+
+final totalCount = docs.length;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -503,7 +555,7 @@ class _MedicinesPageState extends State<MedicinesPage> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        '$takenCount of ${medicines.length} medicines taken',
+                        '$takenCount of $totalCount medicines taken',
                         style: const TextStyle(
                           fontSize: 13,
                           color: Color(0xFF49665D),
@@ -576,19 +628,32 @@ class _MedicinesPageState extends State<MedicinesPage> {
                 ),
               )
             else
-              ...List.generate(
-                medicines.length,
-                (index) {
-                  return Padding(
-                    padding:
-                        const EdgeInsets.only(bottom: 13),
-                    child: medicineCard(
-                      medicine: medicines[index],
-                      index: index,
-                    ),
-                  );
-                },
-              ),
+              StreamBuilder<QuerySnapshot>(
+  stream: medicinesRef.orderBy("createdAt").snapshots(),
+  builder: (context, snapshot) {
+    if (!snapshot.hasData) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final docs = snapshot.data!.docs;
+
+    return Column(
+      children: docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        return medicineCard(
+  medicine: Medicine(
+    name: data["name"] ?? "",
+    dosage: data["dosage"] ?? "",
+    time: data["time"] ?? "",
+    isTaken: data["status"] == "taken",
+  ),
+  docId: doc.id,
+);
+      }).toList(),
+    );
+  },
+),
 
             const SizedBox(height: 15),
 
@@ -644,10 +709,10 @@ class _MedicinesPageState extends State<MedicinesPage> {
 
   // MEDICINE CARD
 
-  Widget medicineCard({
-    required Medicine medicine,
-    required int index,
-  }) {
+Widget medicineCard({
+  required Medicine medicine,
+  required String docId,
+}) {
     return Container(
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
@@ -700,7 +765,7 @@ class _MedicinesPageState extends State<MedicinesPage> {
                 ),
                 const SizedBox(height: 9),
                 GestureDetector(
-                  onTap: () => toggleTaken(index),
+                  onTap: () => toggleTaken(docId, medicine.isTaken),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -731,7 +796,7 @@ class _MedicinesPageState extends State<MedicinesPage> {
             ),
           ),
           IconButton(
-            onPressed: () => deleteMedicine(index),
+onPressed: () => deleteMedicine(docId),
             icon: const Icon(
               Icons.delete_outline_rounded,
               color: Color(0xFFD95353),
@@ -1024,7 +1089,37 @@ class _HealthPageState extends State<HealthPage> {
                       time: DateTime.now(),
                     ),
                   );
-                });
+                  final user = FirebaseAuth.instance.currentUser;
+
+if (user != null) {
+  await FirebaseFirestore.instance
+      .collection("health_records")
+      .add({
+    "userId": user.uid,
+    "type": title,
+    "value": value,
+    "unit": unit,
+    "status": status,
+    "time": FieldValue.serverTimestamp(),
+  });
+}
+
+Navigator.pop(dialogContext);
+
+                final user = FirebaseAuth.instance.currentUser;
+
+if (user != null) {
+  await FirebaseFirestore.instance
+      .collection("health_records")
+      .add({
+    "userId": user.uid,
+    "type": title,
+    "value": value,
+    "unit": unit,
+    "status": status,
+    "time": FieldValue.serverTimestamp(),
+  });
+}
 
                 Navigator.pop(dialogContext);
               },
@@ -1612,53 +1707,92 @@ class _HealthPageState extends State<HealthPage> {
                 ),
               ),
 
-              child: history.isEmpty
+              child: StreamBuilder<QuerySnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection("health_records")
+      .where(
+        "userId",
+        isEqualTo: FirebaseAuth.instance.currentUser?.uid,
+      )
+      .orderBy("time", descending: true)
+      .snapshots(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
 
-                  ? const Padding(
+    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(
+          child: Text(
+            "No health records yet.\nUpdate a vital reading to create history.",
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
 
-                      padding:
-                          EdgeInsets.all(20),
+    final docs = snapshot.data!.docs;
 
-                      child: Center(
+    return Column(
+      children: docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
 
-                        child: Text(
-                          'No health records yet.\nUpdate a vital reading to create history.',
-
-                          textAlign:
-                              TextAlign.center,
-
-                          style: TextStyle(
-                            fontSize: 12,
-                            color:
-                                Color(0xFF71807A),
-                          ),
-                        ),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 15),
+          child: Row(
+            children: [
+              Container(
+                width: 45,
+                height: 45,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEAF7F1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  recordIcon(data["type"] ?? ""),
+                  color: const Color(0xFF4D9B82),
+                ),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data["type"] ?? "",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF193B35),
                       ),
-                    )
-
-                  : Column(
-
-                      children: [
-
-                        ...history.map(
-                          (record) {
-
-                            return Padding(
-
-                              padding:
-                                  const EdgeInsets.only(
-                                bottom: 15,
-                              ),
-
-                              child:
-                                  historyCard(
-                                record,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
                     ),
+                    Text(
+                      data["status"] ?? "",
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF71807A),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '${data["value"]} ${data["unit"]}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  },
+),
             ),
 
 
@@ -2098,50 +2232,55 @@ class _ProfilePageState extends State<ProfilePage> {
   // =========================
   // LOAD SAVED PROFILE
   // =========================
-  Future<void> _loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
+Future<void> _loadProfile() async {
+  final user = FirebaseAuth.instance.currentUser;
 
-    setState(() {
-      name = prefs.getString("profile_name") ?? "Sparsha";
-      age = prefs.getString("profile_age") ?? "20";
-      phone = prefs.getString("profile_phone") ?? "";
-      emergencyContact =
-          prefs.getString("emergency_contact") ?? "";
-      language =
-          prefs.getString("profile_language") ?? "English";
+  if (user == null) return;
 
-      notificationsEnabled =
-          prefs.getBool("notifications_enabled") ?? true;
-    });
-  }
+  final doc = await FirebaseFirestore.instance
+      .collection("users")
+      .doc(user.uid)
+      .get();
 
+  if (!doc.exists) return;
+
+  final data = doc.data()!;
+
+  setState(() {
+    name = data["name"] ?? "Sparsha";
+    age = data["age"] ?? "20";
+    phone = data["phone"] ?? "";
+    emergencyContact = data["emergencyContact"] ?? "";
+    language = data["language"] ?? "English";
+    notificationsEnabled = data["notificationsEnabled"] ?? true;
+  });
+}
   // =========================
   // SAVE PROFILE
   // =========================
-  Future<void> _saveProfile() async {
-    final prefs = await SharedPreferences.getInstance();
+Future<void> _saveProfile() async {
+  final user = FirebaseAuth.instance.currentUser;
 
-    await prefs.setString(
-      "profile_name",
-      nameController.text.trim(),
-    );
+  if (user == null) return;
 
-    await prefs.setString(
-      "profile_age",
-      ageController.text.trim(),
-    );
+  await FirebaseFirestore.instance
+      .collection("users")
+      .doc(user.uid)
+      .set({
+    "name": nameController.text.trim(),
+    "age": ageController.text.trim(),
+    "phone": phoneController.text.trim(),
+    "emergencyContact": emergencyContact,
+    "language": language,
+    "notificationsEnabled": notificationsEnabled,
+  }, SetOptions(merge: true));
 
-    await prefs.setString(
-      "profile_phone",
-      phoneController.text.trim(),
-    );
-
-    setState(() {
-      name = nameController.text.trim();
-      age = ageController.text.trim();
-      phone = phoneController.text.trim();
-    });
-  }
+  setState(() {
+    name = nameController.text.trim();
+    age = ageController.text.trim();
+    phone = phoneController.text.trim();
+  });
+}
 
   // =========================
   // EDIT PROFILE
@@ -2297,32 +2436,32 @@ class _ProfilePageState extends State<ProfilePage> {
                 backgroundColor: const Color(0xFF4D9B82),
                 foregroundColor: Colors.white,
               ),
-              onPressed: () async {
-                final prefs =
-                    await SharedPreferences.getInstance();
+onPressed: () async {
+  final user = FirebaseAuth.instance.currentUser;
 
-                await prefs.setString(
-                  "emergency_contact",
-                  emergencyController.text.trim(),
-                );
+  if (user == null) return;
 
-                setState(() {
-                  emergencyContact =
-                      emergencyController.text.trim();
-                });
+  await FirebaseFirestore.instance
+      .collection("users")
+      .doc(user.uid)
+      .set({
+    "emergencyContact": emergencyController.text.trim(),
+  }, SetOptions(merge: true));
 
-                if (mounted) {
-                  Navigator.pop(context);
+  setState(() {
+    emergencyContact = emergencyController.text.trim();
+  });
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        "Emergency contact saved 🚨",
-                      ),
-                    ),
-                  );
-                }
-              },
+  if (mounted) {
+    Navigator.pop(context);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Emergency contact saved"),
+      ),
+    );
+  }
+},
               child: const Text("Save"),
             ),
           ],
@@ -2373,13 +2512,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     : null,
 
                 onTap: () async {
-                  final prefs =
-                      await SharedPreferences.getInstance();
+                  final user = FirebaseAuth.instance.currentUser;
 
-                  await prefs.setString(
-                    "profile_language",
-                    lang,
-                  );
+if (user != null) {
+  await FirebaseFirestore.instance
+      .collection("users")
+      .doc(user.uid)
+      .set({
+    "language": lang,
+  }, SetOptions(merge: true));
+}
 
                   setState(() {
                     language = lang;
