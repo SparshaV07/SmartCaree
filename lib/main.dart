@@ -33,26 +33,53 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int selectedIndex = 0;
 
-  final List<Widget> pages = const [
-    HomePage(),
-    MedicinesPage(),
-    HealthPage(),
-    ProfilePage(),
-  ];
+  String profileName = "Sparsha";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileName();
+  }
+
+  Future<void> _loadProfileName() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      profileName = prefs.getString("profile_name") ?? "Sparsha";
+    });
+  }
+
+  void _updateProfileName(String newName) {
+    setState(() {
+      profileName = newName;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      HomePage(name: profileName),
+      const MedicinesPage(),
+      const HealthPage(),
+      ProfilePage(
+        onNameChanged: _updateProfileName,
+      ),
+    ];
+
     return Scaffold(
       body: pages[selectedIndex],
+
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         backgroundColor: Colors.white,
         indicatorColor: const Color(0xFFDDF5EB),
+
         onDestinationSelected: (index) {
           setState(() {
             selectedIndex = index;
           });
         },
+
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
@@ -83,7 +110,12 @@ class _MainScreenState extends State<MainScreen> {
 // ================= HOME =================
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final String name;
+
+  const HomePage({
+    super.key,
+    required this.name,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +133,9 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 5),
-            const Text(
-              'Sparsha',
-              style: TextStyle(
+            Text(
+  name.isEmpty ? "User" : name,
+  style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF193B35),
@@ -2065,11 +2097,441 @@ class _HealthPageState extends State<HealthPage> {
   }
 }
 
+// ================= CAREGIVER =================
 
+class Caregiver {
+  String name;
+  String phone;
+  String caregiverId;
+
+  Caregiver({
+    required this.name,
+    required this.phone,
+    required this.caregiverId,
+  });
+}
+class CaregiverPage extends StatefulWidget {
+  const CaregiverPage({super.key});
+
+  @override
+  State<CaregiverPage> createState() => _CaregiverPageState();
+}
+
+
+class _CaregiverPageState extends State<CaregiverPage> {
+  String caregiverName = "";
+  String caregiverPhone = "";
+  String caregiverId = "";
+
+  bool isConnected = false;
+
+  final nameController = TextEditingController();
+  final phoneController = TextEditingController();
+  final idController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCaregiver();
+  }
+
+  Future<void> _loadCaregiver() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      caregiverName = prefs.getString("caregiver_name") ?? "";
+      caregiverPhone = prefs.getString("caregiver_phone") ?? "";
+      caregiverId = prefs.getString("caregiver_id") ?? "";
+
+      isConnected = prefs.getBool("caregiver_connected") ?? false;
+    });
+  }
+
+  Future<void> _connectCaregiver() async {
+    if (nameController.text.trim().isEmpty ||
+        phoneController.text.trim().isEmpty ||
+        idController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter all caregiver details."),
+        ),
+      );
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString(
+      "caregiver_name",
+      nameController.text.trim(),
+    );
+
+    await prefs.setString(
+      "caregiver_phone",
+      phoneController.text.trim(),
+    );
+
+    await prefs.setString(
+      "caregiver_id",
+      idController.text.trim(),
+    );
+
+    await prefs.setBool(
+      "caregiver_connected",
+      true,
+    );
+
+    setState(() {
+      caregiverName = nameController.text.trim();
+      caregiverPhone = phoneController.text.trim();
+      caregiverId = idController.text.trim();
+      isConnected = true;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Caregiver connected successfully 💚"),
+        ),
+      );
+    }
+  }
+
+  Future<void> _disconnectCaregiver() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove("caregiver_name");
+    await prefs.remove("caregiver_phone");
+    await prefs.remove("caregiver_id");
+    await prefs.setBool("caregiver_connected", false);
+
+    setState(() {
+      caregiverName = "";
+      caregiverPhone = "";
+      caregiverId = "";
+      isConnected = false;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Caregiver disconnected."),
+        ),
+      );
+    }
+  }
+
+  void _showConnectDialog() {
+    nameController.clear();
+    phoneController.clear();
+    idController.clear();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            "Connect Caregiver",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF193B35),
+            ),
+          ),
+
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: "Caregiver Name",
+                    prefixIcon: const Icon(Icons.person_outline),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                TextField(
+                  controller: phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: "Phone Number",
+                    prefixIcon: const Icon(Icons.phone_outlined),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                TextField(
+                  controller: idController,
+                  decoration: InputDecoration(
+                    labelText: "Caregiver ID",
+                    hintText: "Example: CGR001",
+                    prefixIcon: const Icon(Icons.badge_outlined),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("Cancel"),
+            ),
+
+            ElevatedButton.icon(
+              onPressed: () async {
+                await _connectCaregiver();
+
+                if (mounted) {
+                  Navigator.pop(dialogContext);
+                }
+              },
+              icon: const Icon(Icons.link_rounded),
+              label: const Text("Connect"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4D9B82),
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6FAF8),
+
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF6FAF8),
+        elevation: 0,
+        title: const Text(
+          "Caregiver",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF193B35),
+          ),
+        ),
+        iconTheme: const IconThemeData(
+          color: Color(0xFF193B35),
+        ),
+      ),
+
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+
+          child: Column(
+            children: [
+              const SizedBox(height: 15),
+
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDDF5EB),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isConnected
+                      ? Icons.people_rounded
+                      : Icons.person_add_alt_1_rounded,
+                  size: 50,
+                  color: const Color(0xFF4D9B82),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Text(
+                isConnected
+                    ? "Caregiver Connected"
+                    : "No Caregiver Connected",
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF193B35),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                isConnected
+                    ? "Your caregiver can be linked to your SmartCare account."
+                    : "Connect a caregiver to receive support and monitoring.",
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF71807A),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              if (isConnected)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.verified_user_rounded,
+                        size: 45,
+                        color: Color(0xFF4D9B82),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      Text(
+                        caregiverName,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF193B35),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Text(
+                        caregiverPhone,
+                        style: const TextStyle(
+                          color: Color(0xFF71807A),
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      Text(
+                        "ID: $caregiverId",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF71807A),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _disconnectCaregiver,
+                          icon: const Icon(Icons.link_off_rounded),
+                          label: const Text("Disconnect Caregiver"),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.redAccent,
+                            side: const BorderSide(
+                              color: Colors.redAccent,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 13,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _showConnectDialog,
+                    icon: const Icon(Icons.link_rounded),
+                    label: const Text("Connect Caregiver"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4D9B82),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 15,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: 20),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF7E8),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: Color(0xFFE09A55),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "Caregiver connection will be linked to the SmartCare backend later.",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF765B38),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    phoneController.dispose();
+    idController.dispose();
+    super.dispose();
+  }
+}
 // ================= PROFILE =================
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final Function(String) onNameChanged;
+
+  const ProfilePage({
+    super.key,
+    required this.onNameChanged,
+  });
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -2118,30 +2580,37 @@ class _ProfilePageState extends State<ProfilePage> {
   // =========================
   // SAVE PROFILE
   // =========================
-  Future<void> _saveProfile() async {
-    final prefs = await SharedPreferences.getInstance();
+Future<void> _saveProfile() async {
+  final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setString(
-      "profile_name",
-      nameController.text.trim(),
-    );
+  final newName = nameController.text.trim();
+  final newAge = ageController.text.trim();
+  final newPhone = phoneController.text.trim();
 
-    await prefs.setString(
-      "profile_age",
-      ageController.text.trim(),
-    );
+  await prefs.setString(
+    "profile_name",
+    newName,
+  );
 
-    await prefs.setString(
-      "profile_phone",
-      phoneController.text.trim(),
-    );
+  await prefs.setString(
+    "profile_age",
+    newAge,
+  );
 
-    setState(() {
-      name = nameController.text.trim();
-      age = ageController.text.trim();
-      phone = phoneController.text.trim();
-    });
-  }
+  await prefs.setString(
+    "profile_phone",
+    newPhone,
+  );
+
+  setState(() {
+    name = newName;
+    age = newAge;
+    phone = newPhone;
+  });
+
+  // 🔥 Update Home page immediately
+  widget.onNameChanged(newName);
+}
 
   // =========================
   // EDIT PROFILE
@@ -2739,21 +3208,18 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
 
               _profileTile(
-                icon: Icons.people_outline,
-                title: "Caregiver",
-                subtitle:
-                    "Manage caregiver connection",
-                onTap: () {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        "Caregiver connection will be added next 👨‍⚕️",
-                      ),
-                    ),
-                  );
-                },
-              ),
+  icon: Icons.people_outline,
+  title: "Caregiver",
+  subtitle: "Manage caregiver connection",
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CaregiverPage(),
+      ),
+    );
+  },
+),
 
               const SizedBox(height: 12),
 
