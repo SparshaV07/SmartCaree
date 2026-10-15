@@ -1,5 +1,4 @@
-**Algorithm: Finite State Machine**
-
+Algorithm: Finite State Machine
 
 The button logic distinguishes short presses for medication confirmation from long presses for SOS. Your code uses state variables, although it does not implement a formal FSM.
 
