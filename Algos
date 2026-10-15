@@ -1,5 +1,8 @@
 **Algorithm: Finite State Machine**
 
+
+The button logic distinguishes short presses for medication confirmation from long presses for SOS. Your code uses state variables, although it does not implement a formal FSM.
+
 1. START.
 2. Initialize the system state.
 3. WHILE the system is active, DO:
@@ -13,40 +16,10 @@
 5. STOP.
 
 
-**Algorithm: Binary Search**
 
-1. START.
-2. Input a sorted array A, its size N, and search element X.
-3. Set LOW = 0 and HIGH = N − 1.
-4. WHILE LOW ≤ HIGH, DO:
-   1. Set MID = (LOW + HIGH) DIV 2.
-   2. IF A[MID] = X, THEN:
-      - Return MID.
-      - STOP.
-   3. ELSE IF A[MID] < X, THEN:
-      - Set LOW = MID + 1.
-   4. ELSE:
-      - Set HIGH = MID − 1.
-5. Return NOT FOUND.
-6. STOP.
+Algorithm: Software Debouncing
 
-
-**Algorithm: Linear Search**
-
-1. START.
-2. Input an array A of size N and search element X.
-3. Set I = 0.
-4. WHILE I < N, DO:
-   1. IF A[I] = X, THEN:
-      - Return I.
-      - STOP.
-   2. ELSE:
-      - Set I = I + 1.
-5. Return NOT FOUND.
-6. STOP.
-
-
-**Algorithm: Software Debouncing**
+Directly used in handleButton() to ensure the button state remains stable for 45 milliseconds before accepting a change.
 
 1. START.
 2. Read the input signal.
@@ -63,7 +36,9 @@
 5. STOP when input monitoring ends.
 
 
-**Algorithm: Periodic Polling**
+Algorithm: Periodic Polling
+
+Directly used in loop() to upload device status and available GPS data every 30 seconds.
 
 1. START.
 2. Initialize the polling interval.
